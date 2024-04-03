@@ -2,91 +2,38 @@ package de.schmaeddes.schmaesweeper;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static de.schmaeddes.schmaesweeper.Util.resizeIcon;
 
 public class MineField extends JButton {
 
-    private MineFieldType type;
+    private MineFieldButtonType type;
     private int id;
     private boolean revealed;
 
+    BufferedImage buttonIcon = ImageIO.read(new File("src/main/resources/blank.png"));
+
     public MineField(int id) throws IOException {
         super();
-//        this.ui = new MineFieldUI();
         this.id = id;
-    }
 
-    public static MineField fromType(MineFieldType type, int id) throws IOException {
-        MineField mineField = new MineField(id);
-        mineField.setSize(90, 80);
-        mineField.setType(type);
+        setSize(90, 80);
 
-        BufferedImage buttonIcon = ImageIO.read(new File("src/main/resources/blank.png"));
-        mineField.setIcon(resizeIcon(new ImageIcon(buttonIcon), 50, 50));
-
-        if (type.equals(MineFieldType.MINE)) {
-            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIcon.png")));
-            mineField.setDisabledIcon(resizeIcon(icon, 50, 50));
-        }
-
-        if (type.equals(MineFieldType.ONE)) {
-            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/one.png")));
-            mineField.setDisabledIcon(resizeIcon(icon, 50, 50));
-        }
-
-        if (type.equals(MineFieldType.TWO)) {
-            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/two.png")));
-            mineField.setDisabledIcon(resizeIcon(icon, 50, 50));
-        }
-
-        if (type.equals(MineFieldType.THREE)) {
-            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/three.png")));
-            mineField.setDisabledIcon(resizeIcon(icon, 50, 50));
-        }
-
-        if (type.equals(MineFieldType.FOUR)) {
-            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/four.png")));
-            mineField.setDisabledIcon(resizeIcon(icon, 50, 50));
-        }
-
-        mineField.addMouseListener(new MouseAdapter(){
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON3) {
-                    ImageIcon icon = null;
-                    try {
-                        icon = new ImageIcon(ImageIO.read(new File("src/main/resources/flag.png")));
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    mineField.setIcon(resizeIcon(icon, 50, 50));
-                }
-            }
-        });
-
-        mineField.addActionListener(e -> {
-            mineField.setEnabled(false);
-        });
-
-        return mineField;
-    }
-
-    public MineFieldType getType() {
-        return this.type;
-    }
-
-    public void setType(MineFieldType type) {
-        this.type = type;
+        setIcon(resizeIcon(new ImageIcon(buttonIcon), 50, 50));
     }
 
     public int getId() {
         return this.id;
+    }
+
+    public MineFieldButtonType getType() {
+        return this.type;
     }
 
     public boolean isRevealed() {
@@ -97,13 +44,68 @@ public class MineField extends JButton {
         this.revealed = revealed;
     }
 
-    private static Icon resizeIcon(ImageIcon icon, int width, int height) {
-        Image img = icon.getImage();
-        Image resizedImage = img.getScaledInstance(width, height,  java.awt.Image.SCALE_SMOOTH);
-        return new ImageIcon(resizedImage);
+    public void resetButton() {
+        setEnabled(true);
+        setRevealed(false);
+        setIcon(resizeIcon(new ImageIcon(buttonIcon), 50, 50));
+        for (ActionListener listener : getActionListeners()) {
+            removeActionListener(listener);
+        }
+
+        addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    ImageIcon icon = null;
+                    try {
+                        icon = new ImageIcon(ImageIO.read(new File("src/main/resources/flag.png")));
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    setIcon(resizeIcon(icon, 50, 50));
+                }
+            }
+        });
+
+        addActionListener(e -> {
+            setEnabled(false);
+        });
     }
 
-    public enum MineFieldType {
+    public void setToType(MineFieldButtonType type) throws IOException {
+        this.type = type;
+
+        if (type.equals(MineFieldButtonType.MINE)) {
+            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIcon.png")));
+            setDisabledIcon(resizeIcon(icon, 50, 50));
+        }
+
+        if (type.equals(MineFieldButtonType.ONE)) {
+            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/one.png")));
+            setDisabledIcon(resizeIcon(icon, 50, 50));
+        }
+
+        if (type.equals(MineFieldButtonType.TWO)) {
+            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/two.png")));
+            setDisabledIcon(resizeIcon(icon, 50, 50));
+        }
+
+        if (type.equals(MineFieldButtonType.THREE)) {
+            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/three.png")));
+            setDisabledIcon(resizeIcon(icon, 50, 50));
+        }
+
+        if (type.equals(MineFieldButtonType.FOUR)) {
+            ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/four.png")));
+            setDisabledIcon(resizeIcon(icon, 50, 50));
+        }
+
+        if (type.equals(MineFieldButtonType.EMPTY)) {
+            setDisabledIcon(null);
+        }
+    }
+
+    public enum MineFieldButtonType {
         MINE(9),
         EMPTY(0),
         ONE(1),
@@ -113,9 +115,8 @@ public class MineField extends JButton {
 
         public int value;
 
-        MineFieldType(int value) {
+        MineFieldButtonType(int value) {
             this.value = value;
         }
     }
 }
-

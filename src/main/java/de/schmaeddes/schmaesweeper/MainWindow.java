@@ -8,12 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.schmaeddes.schmaesweeper.MineField.MineFieldType.*;
-import static de.schmaeddes.schmaesweeper.MineField.MineFieldType.EMPTY;
-
 public class MainWindow extends JFrame {
 
-    private static final List<Integer> mineIds = MineIdGenerator.generateBombIds(81, 10);
+    private static List<Integer> mineIds = MineIdGenerator.generateBombIds(81, 10);
     private static List<MineField> mineFields = new ArrayList<>();
 
     private JPanel mainPanel;
@@ -33,23 +30,21 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Spielfeld bauen
-
-
         numberOfBombsField.setText("10");
 
 
         restartButton.addActionListener(e -> {
             try {
-                blablubb();
+                newGame();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         });
 
+        mineGrid.setLayout(new GridLayout(9,9));
+        buildMineGrid();
 
-        blablubb();
-
+        newGame();
         pack();
         setVisible(true);
     }
@@ -59,22 +54,27 @@ public class MainWindow extends JFrame {
     }
 
 
-    private void buildMineGrid() {
+    private void buildMineGrid() throws IOException {
         mineGrid.setLayout(new GridLayout(9,9));
 
         for (int i = 1; i <= 81; i++) {
+            MineField mineField = new MineField(i);
 
+            mineGrid.add(mineField);
+            mineFields.add(mineField);
         }
-
     }
 
-    public void blablubb() throws IOException {
+    public void newGame() throws IOException {
+        mineIds = MineIdGenerator.generateBombIds(81, 10);
 
+        for (MineField mineField : mineFields) {
 
-        for (int i = 1; i <= 81; i++) {
+            mineField.resetButton();
 
-            if (mineIds.contains(i)){
-                MineField mineField = MineField.fromType(MINE, i);
+            if (mineIds.contains(mineField.getId())){
+
+                mineField.setToType(MineField.MineFieldButtonType.MINE);
 
                 ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIconRed.png")));
                 Image resizedImage = icon.getImage().getScaledInstance(50, 50,  java.awt.Image.SCALE_SMOOTH);
@@ -85,26 +85,19 @@ public class MainWindow extends JFrame {
                     revealAllMines();
                     mineField.setDisabledIcon(icon);
                     timer.stop();
-
                 });
 
-
-
-                mineGrid.add(mineField);
-                mineFields.add(mineField);
             } else {
-                MineField mineField;
-
-                int numberOfBombs = getNumberOfBombs(i);
+                int numberOfBombs = getNumberOfBombs(mineField.getId());
                 switch (numberOfBombs) {
-                    case(1) -> mineField = MineField.fromType(ONE, i);
-                    case(2) -> mineField = MineField.fromType(TWO, i);
-                    case(3) -> mineField = MineField.fromType(THREE, i);
-                    case(4) -> mineField = MineField.fromType(FOUR, i);
+                    case(1) -> mineField.setToType(MineField.MineFieldButtonType.ONE);
+                    case(2) -> mineField.setToType(MineField.MineFieldButtonType.TWO);
+                    case(3) -> mineField.setToType(MineField.MineFieldButtonType.THREE);
+                    case(4) -> mineField.setToType(MineField.MineFieldButtonType.FOUR);
                     default -> {
-                            mineField = MineField.fromType(EMPTY, i);
-                            mineField.addActionListener(e ->
-                                    revealAdjacentEmptyFields(mineField.getId()));
+                        mineField.setToType(MineField.MineFieldButtonType.EMPTY);
+                        mineField.addActionListener(e ->
+                                revealAdjacentEmptyFields(mineField.getId()));
 
                     }
                 }
@@ -114,16 +107,11 @@ public class MainWindow extends JFrame {
                         timer.start();
                     }
                 });
-
-                mineField.setLayout(null);
-                mineGrid.add(mineField);
-                mineFields.add(mineField);
-
             }
         }
     }
 
-    private static void revealAdjacentEmptyFields(int id) {
+    public static void revealAdjacentEmptyFields(int id) {
         List<Integer> surroundedFields = getSurroundedFields(id);
         getMineFieldFromId(id).setRevealed(true);
 
@@ -132,7 +120,7 @@ public class MainWindow extends JFrame {
             mineField.setEnabled(false);
 
 
-            if (mineField.getType().equals(EMPTY) && !mineField.isRevealed()) {
+            if (mineField.getType().equals(MineField.MineFieldButtonType.EMPTY) && !mineField.isRevealed()) {
                 System.out.println("Found another empty: " + mineField.getId());
                 revealAdjacentEmptyFields(mineField.getId());
             }
@@ -141,7 +129,7 @@ public class MainWindow extends JFrame {
 
     private static void revealAllMines() {
         for(MineField mineField : mineFields) {
-            if (mineField.getType().equals(MINE)) {
+            if (mineField.getType().equals(MineField.MineFieldButtonType.MINE)) {
                 mineField.setEnabled(false);
             }
         }
@@ -212,9 +200,5 @@ public class MainWindow extends JFrame {
 
     private void addSecondToTimer() {
         timeField.setText(Integer.toString(Integer.parseInt(timeField.getText()) + 1));
-    }
-
-    public void startTimer() {
-        this.timer.start();
     }
 }
