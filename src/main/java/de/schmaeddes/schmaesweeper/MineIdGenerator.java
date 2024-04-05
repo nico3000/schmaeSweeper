@@ -1,21 +1,18 @@
 package de.schmaeddes.schmaesweeper;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class MineIdGenerator {
 
     public static List<Integer> generateBombIds(int size, int numberOfBombs) {
-        List<Integer> randomInts = new ArrayList<>();
+        Set<Integer> randomInts = new HashSet<>();
         Random random = new Random();
 
-        while(randomInts.size() != numberOfBombs) {
-            int randomNumber = random.nextInt(size - 1);
-
-            if (!randomInts.contains(randomNumber)) {
-                randomInts.add(randomNumber);
-            }
+        while (randomInts.size() != numberOfBombs) {
+            randomInts.add(random.nextInt(size - 1));
         }
 
         return randomInts.stream().sorted().toList();
