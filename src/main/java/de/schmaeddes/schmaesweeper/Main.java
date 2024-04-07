@@ -8,30 +8,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainWindow extends JFrame {
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+
+public class Main {
 
     private static List<Integer> mineIds = MineIdGenerator.generateBombIds(81, 10);
-    private static List<MineField> mineFields = new ArrayList<>();
+    private static final List<MineField> mineFields = new ArrayList<>();
 
-    private JPanel mainPanel;
-    private JLabel numberOfBombsField;
-    private JLabel timeField;
-    private JPanel mineGrid;
-    private JPanel infoPanel;
-    private JButton restartButton;
+    private final JPanel mineGrid = new JPanel(new GridLayout(16, 16));
+    private final InfoPanel infoPanel = new InfoPanel(10);
+    private final JButton restartButton = new JButton("Restart");
 
-    Timer timer = new Timer(1000, e -> addSecondToTimer());
+    public Main() throws IOException {
+        JFrame mainWindow = new JFrame("SchmaeSweeper");
 
-    public MainWindow() throws IOException {
-        timeField.setText("0");
+        mainWindow.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        mainWindow.setLocationRelativeTo(null);
+        mainWindow.setLayout(new BorderLayout());
 
-        setContentPane(mainPanel);
-        setTitle("SchmaeSweeper");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        JPanel headPanel = new JPanel(new FlowLayout());
+        headPanel.add(infoPanel);
+        headPanel.add(restartButton);
 
-        numberOfBombsField.setText("10");
-
+        mainWindow.add(headPanel, BorderLayout.NORTH);
+        mainWindow.add(mineGrid, BorderLayout.CENTER);
 
         restartButton.addActionListener(e -> {
             try {
@@ -41,23 +41,26 @@ public class MainWindow extends JFrame {
             }
         });
 
-        mineGrid.setLayout(new GridLayout(9,9));
         buildMineGrid();
 
         newGame();
-        pack();
-        setVisible(true);
+        mainWindow.pack();
+        mainWindow.setVisible(true);
     }
 
     public static void main(String[] args) throws IOException {
-        new MainWindow();
+        new Main();
     }
 
-
     private void buildMineGrid() throws IOException {
-        mineGrid.setLayout(new GridLayout(9,9));
+        mineGrid.setBackground(Color.darkGray);
 
-        for (int i = 1; i <= 81; i++) {
+        Dimension dimension = new Dimension(320,320);
+
+        mineGrid.setPreferredSize(dimension);
+        mineGrid.setMinimumSize(dimension);
+
+        for (int i = 1; i <= 256; i++) {
             MineField mineField = new MineField(i);
 
             mineGrid.add(mineField);
@@ -77,14 +80,13 @@ public class MainWindow extends JFrame {
                 mineField.setToType(MineField.MineFieldButtonType.MINE);
 
                 ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIconRed.png")));
-                Image resizedImage = icon.getImage().getScaledInstance(50, 50,  java.awt.Image.SCALE_SMOOTH);
+                Image resizedImage = icon.getImage().getScaledInstance(50, 50,  Image.SCALE_SMOOTH);
                 icon.setImage(resizedImage);
 
                 mineField.setContentAreaFilled(false);
                 mineField.addActionListener(e -> {
                     revealAllMines();
                     mineField.setDisabledIcon(icon);
-                    timer.stop();
                 });
 
             } else {
@@ -102,17 +104,13 @@ public class MainWindow extends JFrame {
                     }
                 }
 
-                mineField.addActionListener(e -> {
-                    if (!timer.isRunning()) {
-                        timer.start();
-                    }
-                });
+                mineField.addActionListener(e -> infoPanel.stopTimer());
             }
         }
     }
 
-    public static void revealAdjacentEmptyFields(int id) {
-        List<Integer> surroundedFields = getSurroundedFields(id);
+    public void revealAdjacentEmptyFields(int id) {
+        List<Integer> surroundedFields = getSurroundedFields(id, 16);
         getMineFieldFromId(id).setRevealed(true);
 
         for (int field : surroundedFields) {
@@ -127,7 +125,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private static void revealAllMines() {
+    private void revealAllMines() {
         for(MineField mineField : mineFields) {
             if (mineField.getType().equals(MineField.MineFieldButtonType.MINE)) {
                 mineField.setEnabled(false);
@@ -135,8 +133,8 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private static int getNumberOfBombs(int id) {
-        List<Integer> surroundedFields = getSurroundedFields(id);
+    private int getNumberOfBombs(int id) {
+        List<Integer> surroundedFields = getSurroundedFields(id, 16);
 
         int sum = 0;
 
@@ -149,46 +147,48 @@ public class MainWindow extends JFrame {
         return sum;
     }
 
-    private static List<Integer> getSurroundedFields(int id) {
+    private List<Integer> getSurroundedFields(int id, int rows) {
         List<Integer> surroundedFields = new ArrayList<>();
-        if (id % 9 != 1) {
+        int maxRow = rows * (rows - 1);
 
-            if (id > 9) {
+        if (id % rows != 1) {
+
+            if (id > rows) {
                 // top left
-                surroundedFields.add(id - 10);
+                surroundedFields.add(id - (rows + 1));
             }
             // left
             surroundedFields.add(id - 1);
 
-            if (id < 73) {
+            if (id <= maxRow) {
                 // bottom left
-                surroundedFields.add(id + 8);
+                surroundedFields.add(id + (rows - 1));
             }
         }
 
-        if (id % 9 != 0) {
+        if (id % rows != 0) {
 
-            if (id > 9) {
+            if (id > rows) {
                 // top right
-                surroundedFields.add(id - 8);
+                surroundedFields.add(id - (rows - 1));
             }
             // right
             surroundedFields.add(id + 1);
 
-            if (id < 73) {
+            if (id <= maxRow) {
                 // bottom right
-                surroundedFields.add(id + 10);
+                surroundedFields.add(id + (rows + 1));
             }
         }
 
-        if (id > 9) {
+        if (id > rows) {
             // top
-            surroundedFields.add(id - 9);
+            surroundedFields.add(id - rows);
         }
 
-        if (id < 73) {
+        if (id <= maxRow) {
             // bottom
-            surroundedFields.add(id + 9);
+            surroundedFields.add(id + rows);
         }
 
         return surroundedFields;
@@ -198,7 +198,4 @@ public class MainWindow extends JFrame {
         return mineFields.stream().filter(x -> x.getId() == id).findFirst().get();
     }
 
-    private void addSecondToTimer() {
-        timeField.setText(Integer.toString(Integer.parseInt(timeField.getText()) + 1));
-    }
 }

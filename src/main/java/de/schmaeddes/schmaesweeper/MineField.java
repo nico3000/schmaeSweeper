@@ -2,6 +2,7 @@ package de.schmaeddes.schmaesweeper;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,18 +15,18 @@ import static de.schmaeddes.schmaesweeper.Util.resizeIcon;
 public class MineField extends JButton {
 
     private MineFieldButtonType type;
-    private int id;
+    private final int id;
     private boolean revealed;
 
-    BufferedImage buttonIcon = ImageIO.read(new File("src/main/resources/blank.png"));
+    private final Dimension size = new Dimension(25, 25);
 
     public MineField(int id) throws IOException {
         super();
         this.id = id;
+        setPreferredSize(size);
+        setMinimumSize(size);
 
-        setSize(90, 80);
-
-        setIcon(resizeIcon(new ImageIcon(buttonIcon), 50, 50));
+        resetButton();
     }
 
     public int getId() {
@@ -44,10 +45,13 @@ public class MineField extends JButton {
         this.revealed = revealed;
     }
 
-    public void resetButton() {
+    public void resetButton() throws IOException {
+        BufferedImage buttonIcon = ImageIO.read(new File("src/main/resources/blank.png"));
+
         setEnabled(true);
         setRevealed(false);
-        setIcon(resizeIcon(new ImageIcon(buttonIcon), 50, 50));
+        setIcon(resizeIcon(new ImageIcon(buttonIcon), size));
+
         for (ActionListener listener : getActionListeners()) {
             removeActionListener(listener);
         }
@@ -62,14 +66,12 @@ public class MineField extends JButton {
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
-                    setIcon(resizeIcon(icon, 50, 50));
+                    setIcon(resizeIcon(icon, size));
                 }
             }
         });
 
-        addActionListener(e -> {
-            setEnabled(false);
-        });
+        addActionListener(e -> setEnabled(false));
     }
 
     public void setToType(MineFieldButtonType type) throws IOException {
@@ -77,27 +79,27 @@ public class MineField extends JButton {
 
         if (type.equals(MineFieldButtonType.MINE)) {
             ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIcon.png")));
-            setDisabledIcon(resizeIcon(icon, 50, 50));
+            setDisabledIcon(resizeIcon(icon, size));
         }
 
         if (type.equals(MineFieldButtonType.ONE)) {
             ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/one.png")));
-            setDisabledIcon(resizeIcon(icon, 50, 50));
+            setDisabledIcon(resizeIcon(icon, size));
         }
 
         if (type.equals(MineFieldButtonType.TWO)) {
             ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/two.png")));
-            setDisabledIcon(resizeIcon(icon, 50, 50));
+            setDisabledIcon(resizeIcon(icon, size));
         }
 
         if (type.equals(MineFieldButtonType.THREE)) {
             ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/three.png")));
-            setDisabledIcon(resizeIcon(icon, 50, 50));
+            setDisabledIcon(resizeIcon(icon, size));
         }
 
         if (type.equals(MineFieldButtonType.FOUR)) {
             ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/four.png")));
-            setDisabledIcon(resizeIcon(icon, 50, 50));
+            setDisabledIcon(resizeIcon(icon, size));
         }
 
         if (type.equals(MineFieldButtonType.EMPTY)) {
