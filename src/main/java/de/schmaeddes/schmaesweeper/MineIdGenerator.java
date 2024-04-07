@@ -7,6 +7,8 @@ import java.util.Set;
 
 public class MineIdGenerator {
 
+    private MineIdGenerator(){}
+
     public static List<Integer> generateBombIds(int size, int numberOfBombs) {
         Set<Integer> randomInts = new HashSet<>();
         Random random = new Random();

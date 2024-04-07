@@ -80,13 +80,14 @@ public class Main {
                 mineField.setToType(MineField.MineFieldButtonType.MINE);
 
                 ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIconRed.png")));
-                Image resizedImage = icon.getImage().getScaledInstance(50, 50,  Image.SCALE_SMOOTH);
+                Image resizedImage = icon.getImage().getScaledInstance(20, 20,  Image.SCALE_SMOOTH);
                 icon.setImage(resizedImage);
 
                 mineField.setContentAreaFilled(false);
                 mineField.addActionListener(e -> {
                     revealAllMines();
                     mineField.setDisabledIcon(icon);
+                    infoPanel.stopTimer();
                 });
 
             } else {
@@ -104,7 +105,7 @@ public class Main {
                     }
                 }
 
-                mineField.addActionListener(e -> infoPanel.stopTimer());
+                mineField.addActionListener(e -> infoPanel.startTimer());
             }
         }
     }
@@ -195,7 +196,7 @@ public class Main {
     }
 
     private static MineField getMineFieldFromId(int id) {
-        return mineFields.stream().filter(x -> x.getId() == id).findFirst().get();
+        return mineFields.stream().filter(x -> x.getId() == id).findFirst().orElseThrow();
     }
 
 }

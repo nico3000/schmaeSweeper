@@ -115,7 +115,7 @@ public class MineField extends JButton {
         THREE(3),
         FOUR(4);
 
-        public int value;
+        public final int value;
 
         MineFieldButtonType(int value) {
             this.value = value;

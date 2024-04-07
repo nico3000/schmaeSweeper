@@ -2,7 +2,6 @@ package de.schmaeddes.schmaesweeper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 
 public class InfoPanel extends JPanel {
 
