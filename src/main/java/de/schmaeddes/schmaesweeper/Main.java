@@ -71,6 +71,8 @@ public class Main {
     public void newGame() throws IOException {
         mineIds = MineIdGenerator.generateBombIds(81, 10);
 
+        ImageIcon icon = new ImageIcon(ImageIO.read(MineField.class.getResourceAsStream("/mineIconRed.png")));
+        Image resizedImage = icon.getImage().getScaledInstance(20, 20,  Image.SCALE_SMOOTH);
         for (MineField mineField : mineFields) {
 
             mineField.resetButton();
@@ -79,8 +81,6 @@ public class Main {
 
                 mineField.setToType(MineField.MineFieldButtonType.MINE);
 
-                ImageIcon icon = new ImageIcon(ImageIO.read(new File("src/main/resources/mineIconRed.png")));
-                Image resizedImage = icon.getImage().getScaledInstance(20, 20,  Image.SCALE_SMOOTH);
                 icon.setImage(resizedImage);
 
                 mineField.setContentAreaFilled(false);
